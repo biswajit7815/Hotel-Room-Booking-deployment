@@ -11,6 +11,10 @@ const allowedOrigins = [
   'http://localhost:3033',
   'http://localhost:3034',
   'http://localhost:5500',
+  // ✅ ADD THIS
+  'http://13.206.204.101',
+  'http://13.206.204.101:80',
+   
   'https://api-beach-resort.srmukul.com',
   'https://admin-beach-resort.vercel.app',
   'https://mukul-beach-resort.vercel.app'

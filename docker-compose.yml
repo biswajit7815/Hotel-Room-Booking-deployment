@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # --------------------------------------------------------------------------
+  # ⚙️ Backend API
+  # --------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hotel_backend
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    expose:
+      - "5000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - hotel_network
+
+  # --------------------------------------------------------------------------
+  # 🌐 Next.js Frontend
+  # --------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hotel_frontend
+    env_file:
+      - ./frontend/.env
+    restart: unless-stopped
+    expose:
+      - "3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - hotel_network
+
+  # --------------------------------------------------------------------------
+  # 👨‍💻 Admin Panel
+  # --------------------------------------------------------------------------
+  admin:
+    build:
+      context: ./admin-panel
+      dockerfile: Dockerfile
+    container_name: hotel_admin_panel
+    env_file:
+      - ./admin-panel/.env
+    restart: unless-stopped
+    expose:
+      - "80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - hotel_network
+
+  # --------------------------------------------------------------------------
+  # 🌍 Nginx Reverse Proxy
+  # --------------------------------------------------------------------------
+  nginx:
+    container_name: nginx
+    image: nginx:1.25.3-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro 
+    depends_on:
+      - frontend
+      - admin
+      - backend
+    networks:
+      - hotel_network
+
+# --------------------------------------------------------------------------
+# 🌐 Docker Network
+# --------------------------------------------------------------------------
+networks:
+  hotel_network:
+    driver: bridge

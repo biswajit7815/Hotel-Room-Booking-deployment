@@ -79,6 +79,14 @@ app.use(express.urlencoded({ extended: true }));
 // response default (welcome) route
 app.get('/', defaultController);
 
+// health check route
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Backend is healthy'
+  });
+});
+
 // sets application API's routes
 app.use('/api/v1', authRoute); // auth routes
 app.use('/api/v1', userRoute); // user routes
